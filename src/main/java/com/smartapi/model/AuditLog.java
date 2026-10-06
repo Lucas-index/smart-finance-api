@@ -22,7 +22,7 @@ public class AuditLog {
     @Column(nullable = false, length = 80)
     private String action;
 
-    @Column(columnDefinition = "text")
+    @Column(length = 2000)
     private String details;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -34,7 +34,7 @@ public class AuditLog {
     public AuditLog(Source source, String action, String details) {
         this.source = source;
         this.action = action;
-        this.details = details;
+        this.details = details != null && details.length() > 2000 ? details.substring(0, 2000) : details;
     }
 
     public Long getId() { return id; }

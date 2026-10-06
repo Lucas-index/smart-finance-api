@@ -5,7 +5,7 @@
 - [x] Tool Calling: registrar transação, listar, saldo, checar/definir orçamento
 - [x] Transcription API (Whisper) e Speech API (TTS)
 - [x] Fluxo de orçamento: alerta em 80% e estouro em 100% do limite mensal
-- [x] Persistência em PostgreSQL via Docker Compose
+- [x] Persistência em H2 (arquivo local); PostgreSQL opcional via perfil `postgres`
 - [x] REST: `TransactionController`, `BudgetController`, `AssistantController`, `AuditController`
 - [x] Auditoria: toda ação (API, tool da IA ou áudio) grava em `audit_logs`
 

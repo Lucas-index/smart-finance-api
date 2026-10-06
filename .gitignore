@@ -4,3 +4,4 @@ target/
 *.iml
 .vscode/launch.json
 *.log
+data/

@@ -3,7 +3,7 @@
 API REST de finanças pessoais com assistente de IA: conversa em linguagem natural, registra
 gastos via **Tool Calling**, aceita **áudio** (transcrição) e responde em **voz**.
 
-Stack: Java 21 · Spring Boot 3.5 · Spring AI 1.0.3 (OpenAI) · PostgreSQL (Docker) · Maven
+Stack: Java 21 · Spring Boot 3.5 · Spring AI 1.0.3 (OpenAI) · H2 (banco em arquivo, sem Docker) · Maven
 
 ## Mapa dos módulos do curso → código
 
@@ -16,25 +16,28 @@ Stack: Java 21 · Spring Boot 3.5 · Spring AI 1.0.3 (OpenAI) · PostgreSQL (Doc
 | Transcription API | `ai/TranscriptionService.java` |
 | Speech API | `ai/SpeechService.java` |
 | Assistente / Fluxo de Budget | `ai/AssistantService.java`, `service/BudgetService.java` |
-| Persistência e Docker | `docker-compose.yml`, `model/`, `repository/` |
+| Persistência | `model/`, `repository/` (H2 em arquivo; Postgres/Docker opcional) |
 | Exposição REST | `controller/TransactionController.java` |
 | Endpoint de Transcrição | `POST /api/transactions/audio` |
 | Roadmap e Auditoria | `ROADMAP.md`, `service/AuditService.java`, `GET /api/audit` |
 
 ## Como rodar
 
-Pré-requisitos: JDK 21, Maven 3.9+ (ou use o Maven da extensão Java do VS Code), Docker e uma chave da OpenAI.
+Pré-requisitos: JDK 21, Maven 3.9+ e uma chave da OpenAI. **Não precisa de Docker**: o banco é o H2,
+que cria sozinho o arquivo `./data/smartfinance`.
 
 ```bash
-# 1. banco
-docker compose up -d
-
-# 2. chave da OpenAI
+# 1. chave da OpenAI
 export OPENAI_API_KEY=sk-...          # Windows PowerShell: $env:OPENAI_API_KEY="sk-..."
 
-# 3. subir a API
+# 2. subir a API
 mvn spring-boot:run
 ```
+
+Para ver as tabelas: http://localhost:8080/h2-console (JDBC URL `jdbc:h2:file:./data/smartfinance`, user `sa`, senha vazia).
+
+Opcional: para usar PostgreSQL em vez do H2, suba o `docker-compose.yml` e rode com
+`-Dspring-boot.run.profiles=postgres`.
 
 A API sobe em http://localhost:8080. Abra `api.http` no VS Code (extensão **REST Client**)
 e clique em *Send Request* em cada exemplo.
