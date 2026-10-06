@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: smart-finance-api
+
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:smartfinance}
+    username: ${DB_USER:smart}
+    password: ${DB_PASSWORD:smart123}
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate.format_sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
+          temperature: 0.2
+      audio:
+        transcription:
+          options:
+            model: whisper-1
+            language: pt
+        speech:
+          options:
+            model: tts-1
+            voice: alloy
+            response-format: mp3
+            speed: 1.0
+
+server:
+  port: 8080
+
+logging:
+  level:
+    org.springframework.ai.chat.client.advisor: DEBUG
+    com.smartapi: DEBUG

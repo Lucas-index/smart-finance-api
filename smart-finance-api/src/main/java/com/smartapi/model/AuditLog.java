@@ -1,0 +1,45 @@
+package com.smartapi.model;
+
+import jakarta.persistence.*;
+
+import java.time.Instant;
+
+/** Trilha de auditoria: registra o que foi feito pela API e pelas tools da IA. */
+@Entity
+@Table(name = "audit_logs")
+public class AuditLog {
+
+    public enum Source { API, AI_TOOL, AUDIO }
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Source source;
+
+    @Column(nullable = false, length = 80)
+    private String action;
+
+    @Column(columnDefinition = "text")
+    private String details;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt = Instant.now();
+
+    protected AuditLog() {
+    }
+
+    public AuditLog(Source source, String action, String details) {
+        this.source = source;
+        this.action = action;
+        this.details = details;
+    }
+
+    public Long getId() { return id; }
+    public Source getSource() { return source; }
+    public String getAction() { return action; }
+    public String getDetails() { return details; }
+    public Instant getCreatedAt() { return createdAt; }
+}

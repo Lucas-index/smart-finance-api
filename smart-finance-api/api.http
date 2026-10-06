@@ -1,0 +1,65 @@
+### Requisições para a extensão "REST Client" do VS Code (humao.rest-client)
+@host = http://localhost:8080
+
+### 1. ChatModel direto (sem memória, sem tools)
+GET {{host}}/api/assistant/playground?question=O que é reserva de emergência?&temperature=0.3
+
+### 2. Definir orçamento
+POST {{host}}/api/budgets
+Content-Type: application/json
+
+{ "category": "alimentação", "monthlyLimit": 500 }
+
+### 3. Criar transação pela API REST
+POST {{host}}/api/transactions
+Content-Type: application/json
+
+{ "description": "Mercado", "amount": 120.50, "type": "EXPENSE", "category": "alimentação" }
+
+### 4. Listar transações
+GET {{host}}/api/transactions
+
+### 5. Saldo
+GET {{host}}/api/transactions/balance
+
+### 6. Chat com tool calling (registra a transação sozinho)
+POST {{host}}/api/assistant/chat
+Content-Type: application/json
+
+{ "conversationId": "lucas", "message": "Gastei 380 reais com jantar fora hoje" }
+
+### 7. Memória da conversa
+POST {{host}}/api/assistant/chat
+Content-Type: application/json
+
+{ "conversationId": "lucas", "message": "E como está meu orçamento dessa categoria?" }
+
+### 8. Resposta em voz (salve a resposta como .mp3)
+POST {{host}}/api/assistant/chat/voice
+Content-Type: application/json
+
+{ "conversationId": "lucas", "message": "Qual é o meu saldo?" }
+
+### 9. Texto para voz
+POST {{host}}/api/assistant/speech
+Content-Type: application/json
+
+{ "text": "Olá! Sua despesa foi registrada com sucesso." }
+
+### 10. Áudio -> transcrição -> transação (troque o caminho do arquivo)
+POST {{host}}/api/transactions/audio
+Content-Type: multipart/form-data; boundary=Boundary
+
+--Boundary
+Content-Disposition: form-data; name="conversationId"
+
+lucas
+--Boundary
+Content-Disposition: form-data; name="file"; filename="gasto.mp3"
+Content-Type: audio/mpeg
+
+< ./gasto.mp3
+--Boundary--
+
+### 11. Auditoria
+GET {{host}}/api/audit
