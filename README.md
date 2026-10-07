@@ -15,6 +15,7 @@ confere o orçamento da categoria e avisa quando você está perto do limite ou 
 | **Assistente com IA (chat)** | Entende linguagem natural, lembra do contexto da conversa e usa **Tool Calling** para executar ações reais no sistema. |
 | **Áudio → transação** | Você envia um áudio ("gastei 45 reais no almoço"), ele é transcrito e o assistente registra o gasto. |
 | **Texto → voz** | Converte a resposta do assistente (ou qualquer texto) em áudio mp3. |
+| **Tela web** | Painel completo em `http://localhost:8080`: chat, gravação de áudio, saldo, transações, orçamentos com barra de progresso e histórico de ações. |
 | **Auditoria** | Toda ação (feita pela API, pela IA ou por áudio) fica gravada e pode ser consultada. |
 
 **Stack:** Java 21 · Spring Boot 3.5 · Spring AI 1.0.3 · Spring Data JPA · H2 (banco em arquivo, sem Docker) · Maven
@@ -79,11 +80,13 @@ Pontos importantes:
 smart-finance-api/
 ├── pom.xml                      dependências (Spring Boot, Spring AI, JPA, H2)
 ├── run.cmd                      roda o Maven mesmo sem tê-lo instalado (Windows)
+├── iniciar.cmd                  duplo clique: sobe a API e abre a tela (Windows)
 ├── api.http                     requisições prontas para o VS Code (extensão REST Client)
 ├── ROADMAP.md                   próximos passos do projeto
 ├── docker-compose.yml           Postgres opcional (não é necessário)
 └── src/main/
     ├── resources/
+    │   ├── static/                    tela web (index.html, css/style.css, js/app.js)
     │   ├── application.yml            configuração padrão (OpenAI + H2)
     │   ├── application-groq.yml       perfil gratuito (Groq)
     │   └── application-postgres.yml   perfil opcional (Postgres)
@@ -167,6 +170,25 @@ Started SmartFinanceApiApplication in 6.2 seconds
 ```
 
 a API está no ar em **http://localhost:8080**. **Deixe esse terminal aberto** (Ctrl+C derruba a API).
+
+### 6.5 Abrir a tela web (uso no dia a dia)
+
+Com a API no ar, abra **http://localhost:8080** no navegador. A tela é servida pela própria API, não precisa instalar nada.
+
+| Área | O que faz |
+|---|---|
+| **Saldo (topo)** | Saldo atual, quanto entrou e quanto saiu. |
+| **Chat** | Escreva em português: "gastei 80 reais no mercado", "recebi 3000 de salário", "qual é o meu saldo?". Os atalhos abaixo do chat preenchem exemplos. |
+| **Microfone** | Clique, fale ("gastei quarenta e cinco reais no almoço"), clique de novo para enviar. O áudio é transcrito e registrado. O navegador pede permissão do microfone na primeira vez. |
+| **Transações** | Formulário manual para adicionar e lista com botão **×** para remover (aparece ao passar o mouse). |
+| **Orçamentos** | Defina o limite mensal por categoria e veja a barra: verde (ok), amarela (≥ 80%), vermelha (estourou). |
+| **Histórico de ações** | A auditoria: o que foi feito por você, pela IA e por áudio. |
+
+Os dados ficam salvos em `./data` e continuam ali depois de fechar e abrir a API. Só o histórico da *conversa* com a IA (a memória do chat) é apagado quando a API reinicia.
+
+**Atalho no Windows:** dê dois cliques em `iniciar.cmd`. Na primeira vez ele pede a chave do Groq e a guarda em `chave.txt` (só neste computador; o arquivo não vai para o Git). Depois sobe a API e abre a tela sozinho. Para encerrar, feche a janela do terminal.
+
+> **Importante:** esta versão é para uso **pessoal, no seu computador**. Ela não tem login. Não a coloque na internet como está, porque qualquer pessoa com o endereço veria e alteraria seus dados e gastaria o limite da sua chave de IA.
 
 ---
 

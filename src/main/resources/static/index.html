@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Smart Finance</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%233347e8'/%3E%3Cpath d='M9 21l5-6 4 3 5-8' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Smart Finance</div>
+    <div class="status" id="status" data-state="wait"><span class="dot"></span><span id="statusText">conectando</span></div>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Resumo">
+      <div class="balance">
+        <p class="hint">Saldo atual</p>
+        <p class="big" id="balance">R$ 0,00</p>
+      </div>
+      <dl class="flows">
+        <div><dt>Entrou</dt><dd class="in" id="income">R$ 0,00</dd></div>
+        <div><dt>Saiu</dt><dd class="out" id="expense">R$ 0,00</dd></div>
+      </dl>
+    </section>
+
+    <div class="cols">
+      <!-- CHAT -->
+      <section class="chat" aria-label="Assistente">
+        <div class="chat-head">
+          <h2>Converse com o assistente</h2>
+          <button class="ghost" id="newChat" type="button">Nova conversa</button>
+        </div>
+        <div class="messages" id="messages" aria-live="polite"></div>
+        <div class="chips" id="chips"></div>
+        <form class="composer" id="chatForm" autocomplete="off">
+          <button class="icon mic" id="micBtn" type="button" aria-label="Gravar áudio" title="Gravar áudio (ex.: gastei 45 reais no almoço)">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+          </button>
+          <input id="chatInput" type="text" placeholder="Ex.: gastei 80 reais no mercado" aria-label="Mensagem" required>
+          <button class="primary" id="sendBtn" type="submit">Enviar</button>
+        </form>
+      </section>
+
+      <!-- PAINEL -->
+      <section class="panel" aria-label="Dados">
+        <div class="tabs" role="tablist">
+          <button role="tab" class="tab active" data-tab="transactions" aria-selected="true">Transações</button>
+          <button role="tab" class="tab" data-tab="budgets" aria-selected="false">Orçamentos</button>
+          <button role="tab" class="tab" data-tab="audit" aria-selected="false">Histórico de ações</button>
+        </div>
+
+        <div class="pane" id="pane-transactions">
+          <form class="inline-form" id="txForm">
+            <input name="description" placeholder="Descrição" required>
+            <input name="amount" type="number" step="0.01" min="0.01" placeholder="Valor" required>
+            <select name="type" aria-label="Tipo">
+              <option value="EXPENSE">Despesa</option>
+              <option value="INCOME">Receita</option>
+            </select>
+            <input name="category" placeholder="Categoria" required>
+            <input name="date" type="date" aria-label="Data">
+            <button class="primary" type="submit">Adicionar</button>
+          </form>
+          <ul class="list" id="txList"></ul>
+        </div>
+
+        <div class="pane" id="pane-budgets" hidden>
+          <form class="inline-form" id="budgetForm">
+            <input name="category" placeholder="Categoria" required>
+            <input name="monthlyLimit" type="number" step="0.01" min="1" placeholder="Limite mensal" required>
+            <button class="primary" type="submit">Salvar orçamento</button>
+          </form>
+          <ul class="list" id="budgetList"></ul>
+        </div>
+
+        <div class="pane" id="pane-audit" hidden>
+          <p class="note">Tudo que o sistema faz fica registrado aqui: ações suas, da IA e por áudio.</p>
+          <ul class="list" id="auditList"></ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="toast" role="status"></div>
+  <script src="js/app.js"></script>
+</body>
+</html>
