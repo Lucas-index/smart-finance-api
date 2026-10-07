@@ -6,6 +6,32 @@ confere o orçamento da categoria e avisa quando você está perto do limite ou 
 
 ---
 
+## Início rápido (3 passos)
+
+**A tela (front-end) e a API são um programa só.** A tela fica dentro do projeto e a própria API a entrega no navegador. Subir a API já sobe a tela junto, não há dois programas para abrir.
+
+| Endereço | O que é |
+|---|---|
+| `http://localhost:8080` | a **tela** (chat, saldo, transações, orçamentos, histórico) |
+| `http://localhost:8080/api/...` | a **API** (usada pela tela por baixo e pelo `api.http`) |
+| `http://localhost:8080/h2-console` | o **banco de dados** (para consulta) |
+
+**Opção A — Windows, dois cliques (mais fácil)**
+1. Tenha o **JDK 21** instalado (seção 5).
+2. Dê dois cliques em **`iniciar.cmd`**. Na primeira vez ele pede a chave do Groq e a guarda em `chave.txt` (só no seu computador).
+3. Aguarde cerca de 20 segundos: a tela abre sozinha no navegador. Para encerrar, feche a janela preta do terminal.
+
+**Opção B — pelo terminal (Git Bash)**
+```bash
+export GROQ_API_KEY=sua_chave                                   # chave gratuita em console.groq.com/keys
+./run.cmd spring-boot:run -Dspring-boot.run.profiles=groq       # espere: Started SmartFinanceApiApplication
+```
+Depois abra **http://localhost:8080** no navegador.
+
+**Opção C — sem chave nenhuma:** `./run.cmd spring-boot:run`. A tela abre, mas só funcionam as partes sem IA (transações manuais, orçamentos, saldo e histórico). O chat e o microfone vão dar erro de autenticação.
+
+---
+
 ## 1. O que o projeto faz
 
 | Recurso | Descrição |
@@ -173,16 +199,24 @@ a API está no ar em **http://localhost:8080**. **Deixe esse terminal aberto** (
 
 ### 6.5 Abrir a tela web (uso no dia a dia)
 
-Com a API no ar, abra **http://localhost:8080** no navegador. A tela é servida pela própria API, não precisa instalar nada.
+Com a API no ar (ou usando o `iniciar.cmd`), abra **http://localhost:8080** no navegador. A tela é servida pela própria API, não precisa instalar nada.
+
+**Todas as funções da tela:**
 
 | Área | O que faz |
 |---|---|
-| **Saldo (topo)** | Saldo atual, quanto entrou e quanto saiu. |
-| **Chat** | Escreva em português: "gastei 80 reais no mercado", "recebi 3000 de salário", "qual é o meu saldo?". Os atalhos abaixo do chat preenchem exemplos. |
-| **Microfone** | Clique, fale ("gastei quarenta e cinco reais no almoço"), clique de novo para enviar. O áudio é transcrito e registrado. O navegador pede permissão do microfone na primeira vez. |
-| **Transações** | Formulário manual para adicionar e lista com botão **×** para remover (aparece ao passar o mouse). |
-| **Orçamentos** | Defina o limite mensal por categoria e veja a barra: verde (ok), amarela (≥ 80%), vermelha (estourou). |
-| **Histórico de ações** | A auditoria: o que foi feito por você, pela IA e por áudio. |
+| **Indicador "online" (canto superior)** | Verde quando a tela está falando com a API; vermelho "offline" se a API caiu. |
+| **Saldo (topo)** | Saldo atual em destaque (fica vermelho se negativo), mais quanto **entrou** e quanto **saiu**. Atualiza sozinho após cada ação. |
+| **Chat com o assistente** | Escreva em português: "gastei 80 reais no mercado, categoria alimentação", "recebi 3000 de salário", "qual é o meu saldo?", "defina um orçamento de 400 para lazer", "mostre minhas últimas transações". A IA executa a ação de verdade e responde. |
+| **Atalhos do chat** | Quatro frases prontas abaixo do chat: um clique envia o exemplo. |
+| **Memória da conversa** | A IA lembra do que foi dito antes na mesma conversa ("e como está o orçamento *dessa* categoria?"). |
+| **Nova conversa** | Botão no topo do chat: limpa a conversa e começa uma nova memória. |
+| **Microfone** | Clique, fale ("gastei quarenta e cinco reais no almoço") e clique de novo para enviar. O áudio é transcrito, aparece como "Áudio transcrito: ..." e a IA registra o gasto. O navegador pede permissão do microfone na primeira vez. |
+| **Aba Transações** | Formulário manual (descrição, valor, despesa ou receita, categoria, data opcional) e lista das transações, mais recentes primeiro. Passe o mouse sobre uma linha e clique no **×** para remover. Se a despesa deixar um orçamento perto do limite, aparece um aviso. |
+| **Aba Orçamentos** | Defina o limite mensal por categoria. Cada orçamento mostra quanto já foi gasto no mês e uma barra: **verde** (abaixo de 80%), **amarela** (80% ou mais) e **vermelha** (estourou). |
+| **Aba Histórico de ações** | A auditoria: o que foi feito por você (API), pela IA (IA) e por áudio, com data e hora. |
+| **Modo escuro** | Automático, segue o tema do seu sistema. |
+| **Celular** | A tela se adapta a telas pequenas. |
 
 Os dados ficam salvos em `./data` e continuam ali depois de fechar e abrir a API. Só o histórico da *conversa* com a IA (a memória do chat) é apagado quando a API reinicia.
 
@@ -315,6 +349,7 @@ Tabelas: `transactions`, `budgets`, `audit_logs`. Para zerar tudo, pare a API e 
 
 | Método | Rota | Descrição | Precisa de IA? |
 |---|---|---|---|
+| GET | `/` | a **tela web** (arquivos em `src/main/resources/static`) | não |
 | POST | `/api/transactions` | cria transação (retorna status do orçamento se for despesa) | não |
 | GET | `/api/transactions?page=0&size=20` | lista paginada, mais recentes primeiro | não |
 | GET | `/api/transactions/{id}` | busca uma transação | não |
@@ -351,6 +386,11 @@ Roda o `BudgetServiceTest`, que verifica as regras de orçamento (sem orçamento
 |---|---|
 | `mvn: command not found` | Maven não instalado. Use `./run.cmd ...` no lugar de `mvn`. |
 | `[ERRO] Java nao encontrado` | Instale o JDK 21 (seção 5) e abra um terminal novo. |
+| `localhost:8080` mostra página de erro em vez da tela | Você está rodando uma versão antiga do projeto, sem a pasta `static`. Baixe o zip mais recente e rode de novo. |
+| `iniciar.cmd` abre e fecha rápido, ou a tela não abre | Rode `iniciar.cmd` pelo terminal para ler a mensagem. Causas comuns: JDK 21 não instalado ou a API ainda está subindo (abra **http://localhost:8080** manualmente após 20–30 s). |
+| Tela com indicador "offline" | A API não está rodando ou caiu. Veja o terminal e suba de novo. |
+| Microfone não grava | Permita o microfone no navegador (cadeado ao lado do endereço). Só funciona em `localhost` ou `https`. |
+| Quero trocar a chave do Groq | Apague o arquivo `chave.txt` e rode `iniciar.cmd` de novo; ele pergunta a chave nova. |
 | `401` / `Incorrect API key` | Chave errada, vazia ou sem crédito. Confirme se exportou a variável **no mesmo terminal** em que rodou a API. |
 | `429` (Too Many Requests) | Limite do plano gratuito atingido. Aguarde alguns minutos. |
 | `Port 8080 was already in use` | Outro programa usa a porta. Feche-o ou rode com `-Dspring-boot.run.arguments=--server.port=8081`. |
