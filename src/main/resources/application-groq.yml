@@ -1,0 +1,15 @@
+# Perfil gratuito: usa o Groq (API compatível com a da OpenAI). Ative com -Dspring-boot.run.profiles=groq
+spring:
+  ai:
+    openai:
+      api-key: ${GROQ_API_KEY}
+      base-url: https://api.groq.com/openai
+      chat:
+        options:
+          model: llama-3.3-70b-versatile
+          temperature: 0.2
+      audio:
+        transcription:
+          options:
+            model: whisper-large-v3-turbo
+            language: pt

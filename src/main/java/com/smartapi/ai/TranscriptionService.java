@@ -3,6 +3,7 @@ package com.smartapi.ai;
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
 import org.springframework.ai.openai.OpenAiAudioTranscriptionModel;
 import org.springframework.ai.openai.OpenAiAudioTranscriptionOptions;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -15,9 +16,12 @@ import java.io.IOException;
 public class TranscriptionService {
 
     private final OpenAiAudioTranscriptionModel transcriptionModel;
+    private final String modelName;
 
-    public TranscriptionService(OpenAiAudioTranscriptionModel transcriptionModel) {
+    public TranscriptionService(OpenAiAudioTranscriptionModel transcriptionModel,
+                                @Value("${spring.ai.openai.audio.transcription.options.model:whisper-1}") String modelName) {
         this.transcriptionModel = transcriptionModel;
+        this.modelName = modelName;
     }
 
     public String transcribe(MultipartFile file) {
@@ -35,7 +39,7 @@ public class TranscriptionService {
             };
 
             var options = OpenAiAudioTranscriptionOptions.builder()
-                    .model("whisper-1")
+                    .model(modelName)
                     .language("pt")
                     .build();
 

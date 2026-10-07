@@ -26,7 +26,8 @@ spring:
 
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
+      api-key: ${OPENAI_API_KEY:sem-chave}   # sem chave a API sobe, mas só os endpoints REST (sem IA) funcionam
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
       chat:
         options:
           model: ${OPENAI_CHAT_MODEL:gpt-4o-mini}
