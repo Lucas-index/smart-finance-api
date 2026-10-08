@@ -1,5 +1,7 @@
 package com.smartapi.ai;
 
+import com.smartapi.exception.AiErrors;
+import com.smartapi.exception.AssistantException;
 import org.springframework.ai.audio.transcription.AudioTranscriptionPrompt;
 import org.springframework.ai.openai.OpenAiAudioTranscriptionModel;
 import org.springframework.ai.openai.OpenAiAudioTranscriptionOptions;
@@ -43,9 +45,13 @@ public class TranscriptionService {
                     .language("pt")
                     .build();
 
-            return transcriptionModel.call(new AudioTranscriptionPrompt(audio, options))
-                    .getResult()
-                    .getOutput();
+            try {
+                return transcriptionModel.call(new AudioTranscriptionPrompt(audio, options))
+                        .getResult()
+                        .getOutput();
+            } catch (RuntimeException e) {
+                throw new AssistantException(AiErrors.explain(e), e);
+            }
         } catch (IOException e) {
             throw new IllegalStateException("Não foi possível ler o áudio enviado.", e);
         }

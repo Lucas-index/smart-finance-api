@@ -2,15 +2,11 @@ spring:
   application:
     name: smart-finance-api
 
-  # Banco padrão: H2 em arquivo (./data/smartfinance). Nada para instalar.
+  # MySQL local. Crie o banco uma vez (veja o README) ou deixe o createDatabaseIfNotExist criar.
   datasource:
-    url: jdbc:h2:file:./data/smartfinance;AUTO_SERVER=TRUE
-    username: sa
-    password:
-
-  h2:
-    console:
-      enabled: true        # http://localhost:8080/h2-console  (JDBC URL acima, user sa, senha vazia)
+    url: jdbc:mysql://${DB_HOST:localhost}:${DB_PORT:3306}/${DB_NAME:smartfinance}?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+    username: ${DB_USER:root}
+    password: ${DB_PASSWORD:}
 
   jpa:
     hibernate:
@@ -46,6 +42,10 @@ spring:
 
 server:
   port: 8080
+
+app:
+  auth:
+    token-days: 7        # quantos dias o login fica válido
 
 logging:
   level:

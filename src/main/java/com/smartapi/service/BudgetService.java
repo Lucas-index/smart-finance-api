@@ -7,6 +7,7 @@ import com.smartapi.model.Budget;
 import com.smartapi.model.TransactionType;
 import com.smartapi.repository.BudgetRepository;
 import com.smartapi.repository.TransactionRepository;
+import com.smartapi.security.CurrentUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,8 +36,9 @@ public class BudgetService {
     @Transactional
     public Budget define(String category, BigDecimal monthlyLimit, AuditLog.Source source) {
         String normalized = CategoryNormalizer.normalize(category);
-        Budget budget = budgetRepository.findByCategory(normalized)
-                .orElseGet(() -> new Budget(normalized, monthlyLimit));
+        Long userId = CurrentUser.id();
+        Budget budget = budgetRepository.findByUserIdAndCategory(userId, normalized)
+                .orElseGet(() -> new Budget(userId, normalized, monthlyLimit));
         budget.setMonthlyLimit(monthlyLimit);
         Budget saved = budgetRepository.save(budget);
         auditService.record(source, "BUDGET_DEFINED", normalized + " = " + monthlyLimit);
@@ -45,14 +47,15 @@ public class BudgetService {
 
     @Transactional(readOnly = true)
     public List<Budget> list() {
-        return budgetRepository.findAll();
+        return budgetRepository.findByUserId(CurrentUser.id());
     }
 
     /** Compara os gastos do mês corrente da categoria com o limite definido. */
     @Transactional(readOnly = true)
     public BudgetStatus evaluate(String category) {
         String normalized = CategoryNormalizer.normalize(category);
-        Budget budget = budgetRepository.findByCategory(normalized).orElse(null);
+        Long userId = CurrentUser.id();
+        Budget budget = budgetRepository.findByUserIdAndCategory(userId, normalized).orElse(null);
         if (budget == null) {
             return new BudgetStatus(normalized, Level.NO_BUDGET, null, null, null,
                     "Nenhum orçamento definido para '" + normalized + "'.");
@@ -60,7 +63,7 @@ public class BudgetService {
 
         YearMonth month = YearMonth.now();
         BigDecimal spent = transactionRepository.sumByTypeAndCategoryBetween(
-                TransactionType.EXPENSE, normalized, month.atDay(1), month.atEndOfMonth());
+                userId, TransactionType.EXPENSE, normalized, month.atDay(1), month.atEndOfMonth());
         BigDecimal limit = budget.getMonthlyLimit();
         BigDecimal remaining = limit.subtract(spent);
         BigDecimal ratio = spent.divide(limit, 4, RoundingMode.HALF_UP);

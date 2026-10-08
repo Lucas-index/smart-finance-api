@@ -7,12 +7,15 @@ import java.time.Instant;
 import java.time.LocalDate;
 
 @Entity
-@Table(name = "transactions")
+@Table(name = "transactions", indexes = @Index(name = "idx_transactions_user", columnList = "user_id"))
 public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
 
     @Column(nullable = false)
     private String description;
@@ -36,7 +39,8 @@ public class Transaction {
     protected Transaction() {
     }
 
-    public Transaction(String description, BigDecimal amount, TransactionType type, String category, LocalDate date) {
+    public Transaction(Long userId, String description, BigDecimal amount, TransactionType type, String category, LocalDate date) {
+        this.userId = userId;
         this.description = description;
         this.amount = amount;
         this.type = type;
@@ -45,6 +49,7 @@ public class Transaction {
     }
 
     public Long getId() { return id; }
+    public Long getUserId() { return userId; }
     public String getDescription() { return description; }
     public BigDecimal getAmount() { return amount; }
     public TransactionType getType() { return type; }

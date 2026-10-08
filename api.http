@@ -1,53 +1,78 @@
 ### Requisições para a extensão "REST Client" do VS Code (humao.rest-client)
 @host = http://localhost:8080
 
+### 0a. Criar conta (só na primeira vez; depois use o 0b)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{ "name": "Lucas", "email": "lucas@teste.com", "password": "123456" }
+
+### 0b. Entrar (guarda o token para as outras requisições)
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{ "email": "lucas@teste.com", "password": "123456" }
+
+@token = {{login.response.body.$.token}}
+
 ### 1. ChatModel direto (sem memória, sem tools)
 GET {{host}}/api/assistant/playground?question=O que é reserva de emergência?&temperature=0.3
+Authorization: Bearer {{token}}
 
 ### 2. Definir orçamento
 POST {{host}}/api/budgets
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "category": "alimentação", "monthlyLimit": 500 }
 
 ### 3. Criar transação pela API REST
 POST {{host}}/api/transactions
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "description": "Mercado", "amount": 120.50, "type": "EXPENSE", "category": "alimentação" }
 
 ### 4. Listar transações
 GET {{host}}/api/transactions
+Authorization: Bearer {{token}}
 
 ### 5. Saldo
 GET {{host}}/api/transactions/balance
+Authorization: Bearer {{token}}
 
 ### 6. Chat com tool calling (registra a transação sozinho)
 POST {{host}}/api/assistant/chat
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "conversationId": "lucas", "message": "Gastei 380 reais com jantar fora hoje" }
 
 ### 7. Memória da conversa
 POST {{host}}/api/assistant/chat
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "conversationId": "lucas", "message": "E como está meu orçamento dessa categoria?" }
 
 ### 8. Resposta em voz (salve a resposta como .mp3)
 POST {{host}}/api/assistant/chat/voice
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "conversationId": "lucas", "message": "Qual é o meu saldo?" }
 
 ### 9. Texto para voz
 POST {{host}}/api/assistant/speech
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "text": "Olá! Sua despesa foi registrada com sucesso." }
 
 ### 10. Áudio -> transcrição -> transação (troque o caminho do arquivo)
 POST {{host}}/api/transactions/audio
+Authorization: Bearer {{token}}
 Content-Type: multipart/form-data; boundary=Boundary
 
 --Boundary
@@ -63,3 +88,4 @@ Content-Type: audio/mpeg
 
 ### 11. Auditoria
 GET {{host}}/api/audit
+Authorization: Bearer {{token}}

@@ -1,7 +1,12 @@
 package com.smartapi.ai;
 
+import com.smartapi.exception.AiErrors;
+import com.smartapi.exception.AssistantException;
 import com.smartapi.model.AuditLog;
+import com.smartapi.security.CurrentUser;
 import com.smartapi.service.AuditService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.stereotype.Service;
@@ -30,6 +35,8 @@ public class AssistantService {
             5. Valores em reais (R$). Hoje é %s.
             """;
 
+    private static final Logger log = LoggerFactory.getLogger(AssistantService.class);
+
     private final ChatClient chatClient;
     private final FinanceTools financeTools;
     private final AuditService auditService;
@@ -45,13 +52,29 @@ public class AssistantService {
     }
 
     public String chat(String conversationId, String userMessage, AuditLog.Source origin) {
-        String reply = chatClient.prompt()
-                .system(SYSTEM_PROMPT.formatted(LocalDate.now()))
-                .user(userMessage)
-                .tools(financeTools)
-                .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, conversationId))
-                .call()
-                .content();
+        // A memória da conversa é separada por usuário: ninguém enxerga o chat de outra pessoa.
+        String memoryId = "user-" + CurrentUser.id() + ":" + conversationId;
+        String reply = null;
+        for (int attempt = 1; ; attempt++) {
+            try {
+                reply = chatClient.prompt()
+                        .system(SYSTEM_PROMPT.formatted(LocalDate.now()))
+                        .user(userMessage)
+                        .tools(financeTools)
+                        .advisors(a -> a.param(ChatMemory.CONVERSATION_ID, memoryId))
+                        .call()
+                        .content();
+                break;
+            } catch (RuntimeException e) {
+                // O Llama no Groq às vezes monta a chamada da tool no formato errado; tentar de novo costuma resolver.
+                if (attempt < 2 && AiErrors.isToolGlitch(e)) {
+                    log.warn("Falha de tool calling na tentativa {}; tentando de novo.", attempt);
+                    continue;
+                }
+                log.error("Falha ao chamar a IA", e);
+                throw new AssistantException(AiErrors.explain(e), e);
+            }
+        }
 
         auditService.record(origin, "ASSISTANT_CHAT", "conversation=" + conversationId + " | user: " + userMessage);
         return reply;

@@ -17,6 +17,14 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Tool Calling: funções reais que o modelo pode chamar para operar o sistema.
+ * Cada chamada passa pelos mesmos serviços da API REST (e é auditada como AI_TOOL).
+ *
+ * Os valores numéricos chegam como TEXTO de propósito: alguns modelos (ex.: Llama no Groq) mandam
+ * "400" em vez de 400, e o provedor rejeita a chamada por tipo errado. Recebendo texto e convertendo
+ * aqui, funciona com qualquer modelo e aceita formatos como "R$ 1.234,56".
+ */
 @Component
 public class FinanceTools {
 
@@ -89,7 +97,7 @@ public class FinanceTools {
         };
     }
 
-    /** Aceita "400", "45.90", "45,90", "R$ 1.234,56" e "1,234.56". */
+    /** Aceita "400", "45.90", "45,90", "R$ 1.234,56" e "1,234.56". Sempre positivo. */
     static BigDecimal parseMoney(String raw) {
         if (raw == null || raw.isBlank()) {
             throw new IllegalArgumentException("Valor é obrigatório.");

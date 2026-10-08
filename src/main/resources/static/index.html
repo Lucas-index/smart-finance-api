@@ -8,12 +8,92 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
+  <!-- LOGIN / CADASTRO -->
+    <!-- LOGIN / CADASTRO -->
+  <section id="auth" class="auth" hidden>
+    <aside class="auth-side">
+      <div class="auth-logo">
+        <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true"><rect width="32" height="32" rx="8" fill="#7b8cff"/><path d="M9 21l5-6 4 3 5-8" fill="none" stroke="#12163a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Smart Finance</span>
+      </div>
+
+      <div class="auth-pitch">
+        <p class="auth-headline">Diga o que gastou.<br>A gente organiza o resto.</p>
+        <p class="auth-sub">Converse com o assistente, fale por áudio ou lance na mão. Cada conta tem as suas próprias finanças.</p>
+      </div>
+
+      <div class="demo" aria-hidden="true">
+        <div class="demo-msg me">Gastei 45 reais no almoço</div>
+        <div class="demo-msg bot">
+          Registrei R$ 45,00 em alimentação.
+          <div class="demo-meter"><span></span></div>
+          <small>R$ 280 de R$ 500 neste mês</small>
+        </div>
+      </div>
+    </aside>
+
+    <div class="auth-main">
+      <div class="auth-box">
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab active" data-auth="login" role="tab" aria-selected="true">Entrar</button>
+          <button type="button" class="auth-tab" data-auth="register" role="tab" aria-selected="false">Criar conta</button>
+        </div>
+
+        <form id="loginForm" class="auth-form">
+          <h1>Bem-vindo de volta</h1>
+          <p class="auth-lead">Entre para ver as suas finanças.</p>
+          <div class="field">
+            <label for="loginEmail">E-mail</label>
+            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+          </div>
+          <div class="field">
+            <label for="loginPass">Senha</label>
+            <div class="pw">
+              <input id="loginPass" name="password" type="password" autocomplete="current-password" required>
+              <button type="button" class="pw-toggle" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+            </div>
+          </div>
+          <button class="primary" type="submit">Entrar</button>
+        </form>
+
+        <form id="registerForm" class="auth-form" hidden>
+          <h1>Crie a sua conta</h1>
+          <p class="auth-lead">Leva menos de um minuto. Suas finanças ficam só na sua conta.</p>
+          <div class="field">
+            <label for="regName">Nome</label>
+            <input id="regName" name="name" type="text" autocomplete="name" maxlength="100" required>
+          </div>
+          <div class="field">
+            <label for="regEmail">E-mail</label>
+            <input id="regEmail" name="email" type="email" autocomplete="email" placeholder="voce@email.com" required>
+          </div>
+          <div class="field">
+            <label for="regPass">Senha</label>
+            <div class="pw">
+              <input id="regPass" name="password" type="password" autocomplete="new-password" minlength="6" maxlength="72" aria-describedby="regPassHint" required>
+              <button type="button" class="pw-toggle" aria-label="Mostrar senha" aria-pressed="false">Mostrar</button>
+            </div>
+            <span class="field-hint" id="regPassHint">Mínimo de 6 caracteres.</span>
+          </div>
+          <button class="primary" type="submit">Criar conta</button>
+        </form>
+
+        <p class="auth-error" id="authError" role="alert" hidden></p>
+      </div>
+    </div>
+  </section>
+
+  <div id="app" hidden>
   <header class="top">
     <div class="brand">Smart Finance</div>
-    <div class="status" id="status" data-state="wait"><span class="dot"></span><span id="statusText">conectando</span></div>
+    <div class="top-right">
+      <div class="status" id="status" data-state="wait"><span class="dot"></span><span id="statusText">conectando</span></div>
+      <span class="user-name" id="userName"></span>
+      <button class="ghost" id="logoutBtn" type="button">Sair</button>
+    </div>
   </header>
 
   <main>
@@ -85,8 +165,9 @@
       </section>
     </div>
   </main>
+  </div>
 
   <div id="toast" role="status"></div>
-  <script src="js/app.js"></script>
+  <script src="/js/app.js"></script>
 </body>
 </html>

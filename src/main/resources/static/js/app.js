@@ -6,13 +6,27 @@ const fmtDate = (iso) => (iso ? iso.split("-").reverse().slice(0, 2).join("/") :
 const fmtDateTime = (iso) => new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
 
 let conversationId = newId();
+
+/* ---------- Sessão (login) ---------- */
+const store = {
+  get: (k) => { try { return localStorage.getItem(k); } catch { return null; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch { /* sem storage */ } },
+  del: (k) => { try { localStorage.removeItem(k); } catch { /* sem storage */ } },
+};
+let token = store.get("sf_token");
 function newId() { return "web-" + Math.random().toString(36).slice(2, 8); }
 
 /* ---------- API ---------- */
 async function api(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (token) headers.Authorization = "Bearer " + token;
   let res;
-  try { res = await fetch(path, options); }
+  try { res = await fetch(path, { ...options, headers }); }
   catch { throw new Error("Não consegui falar com a API. Ela está rodando?"); }
+  if (res.status === 401 && !path.startsWith("/api/auth/")) {
+    endSession();
+    throw new Error("Sua sessão expirou. Entre novamente.");
+  }
   if (!res.ok) {
     let detail = "Erro " + res.status;
     try { const body = await res.json(); detail = body.detail || body.message || detail; } catch { /* sem corpo */ }
@@ -209,6 +223,73 @@ $("#txList").addEventListener("click", async (e) => {
   catch (err) { toast(err.message); }
 });
 
+/* ---------- Login, cadastro e sair ---------- */
+function showAuth() {
+  $("#app").hidden = true;
+  $("#auth").hidden = false;
+  $("#authError").hidden = true;
+}
+function showApp(user) {
+  $("#auth").hidden = true;
+  $("#app").hidden = false;
+  $("#userName").textContent = user.name;
+  conversationId = newId();
+  greet();
+  refreshAll();
+}
+function endSession() {
+  token = null;
+  store.del("sf_token");
+  showAuth();
+}
+function authError(msg) {
+  const el = $("#authError");
+  el.textContent = msg;
+  el.hidden = false;
+}
+
+document.querySelectorAll(".auth-tab").forEach((tab) => tab.addEventListener("click", () => {
+  document.querySelectorAll(".auth-tab").forEach((t) => { t.classList.toggle("active", t === tab); t.setAttribute("aria-selected", t === tab); });
+  $("#loginForm").hidden = tab.dataset.auth !== "login";
+  $("#registerForm").hidden = tab.dataset.auth !== "register";
+  $("#authError").hidden = true;
+}));
+
+document.querySelectorAll(".pw-toggle").forEach((btn) => btn.addEventListener("click", () => {
+  const input = btn.previousElementSibling;
+  const show = input.type === "password";
+  input.type = show ? "text" : "password";
+  btn.textContent = show ? "Ocultar" : "Mostrar";
+  btn.setAttribute("aria-pressed", show);
+  btn.setAttribute("aria-label", show ? "Ocultar senha" : "Mostrar senha");
+}));
+
+async function submitAuth(e, path) {
+  e.preventDefault();
+  const form = e.target;
+  const btn = form.querySelector("button[type=submit]");
+  const body = Object.fromEntries(new FormData(form));
+  btn.disabled = true;
+  try {
+    const res = await api(path, json("POST", body));
+    token = res.token;
+    store.set("sf_token", token);
+    form.reset();
+    showApp(res.user);
+  } catch (err) { authError(err.message); }
+  finally { btn.disabled = false; }
+}
+$("#loginForm").addEventListener("submit", (e) => submitAuth(e, "/api/auth/login"));
+$("#registerForm").addEventListener("submit", (e) => submitAuth(e, "/api/auth/register"));
+
+$("#logoutBtn").addEventListener("click", async () => {
+  try { await api("/api/auth/logout", { method: "POST" }); } catch { /* sai mesmo assim */ }
+  endSession();
+});
+
 /* ---------- Início ---------- */
-greet();
-refreshAll();
+(async function start() {
+  if (!token) { showAuth(); return; }
+  try { showApp(await api("/api/auth/me")); }
+  catch { endSession(); }
+})();

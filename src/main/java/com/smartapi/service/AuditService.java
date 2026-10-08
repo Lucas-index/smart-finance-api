@@ -1,6 +1,7 @@
 package com.smartapi.service;
 
 import com.smartapi.model.AuditLog;
+import com.smartapi.security.CurrentUser;
 import com.smartapi.repository.AuditLogRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,11 +19,16 @@ public class AuditService {
 
     @Transactional
     public void record(AuditLog.Source source, String action, String details) {
-        repository.save(new AuditLog(source, action, details));
+        record(CurrentUser.idOrNull(), source, action, details);
+    }
+
+    @Transactional
+    public void record(Long userId, AuditLog.Source source, String action, String details) {
+        repository.save(new AuditLog(userId, source, action, details));
     }
 
     @Transactional(readOnly = true)
     public Page<AuditLog> list(Pageable pageable) {
-        return repository.findAllByOrderByIdDesc(pageable);
+        return repository.findByUserIdOrderByIdDesc(CurrentUser.id(), pageable);
     }
 }

@@ -1,3 +1,4 @@
+# Perfil gratuito: usa o Groq (API compatível com a da OpenAI). Ative com -Dspring-boot.run.profiles=groq
 spring:
   ai:
     openai:
@@ -5,7 +6,7 @@ spring:
       base-url: https://api.groq.com/openai
       chat:
         options:
-          model: openai/gpt-oss-120b    
+          model: openai/gpt-oss-120b
           temperature: 0.2
       audio:
         transcription:

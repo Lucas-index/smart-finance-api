@@ -15,6 +15,9 @@ public class AuditLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "user_id")
+    private Long userId;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private Source source;
@@ -31,13 +34,15 @@ public class AuditLog {
     protected AuditLog() {
     }
 
-    public AuditLog(Source source, String action, String details) {
+    public AuditLog(Long userId, Source source, String action, String details) {
+        this.userId = userId;
         this.source = source;
         this.action = action;
         this.details = details != null && details.length() > 2000 ? details.substring(0, 2000) : details;
     }
 
     public Long getId() { return id; }
+    public Long getUserId() { return userId; }
     public Source getSource() { return source; }
     public String getAction() { return action; }
     public String getDetails() { return details; }

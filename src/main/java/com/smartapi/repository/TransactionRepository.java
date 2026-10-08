@@ -10,20 +10,24 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Long> {
 
-    Page<Transaction> findAllByOrderByDateDescIdDesc(Pageable pageable);
+    Page<Transaction> findByUserIdOrderByDateDescIdDesc(Long userId, Pageable pageable);
 
-    @Query("select coalesce(sum(t.amount), 0) from Transaction t where t.type = :type")
-    BigDecimal sumByType(@Param("type") TransactionType type);
+    Optional<Transaction> findByIdAndUserId(Long id, Long userId);
+
+    @Query("select coalesce(sum(t.amount), 0) from Transaction t where t.userId = :userId and t.type = :type")
+    BigDecimal sumByType(@Param("userId") Long userId, @Param("type") TransactionType type);
 
     @Query("""
             select coalesce(sum(t.amount), 0) from Transaction t
-            where t.type = :type and t.category = :category
+            where t.userId = :userId and t.type = :type and t.category = :category
               and t.date between :start and :end
             """)
-    BigDecimal sumByTypeAndCategoryBetween(@Param("type") TransactionType type,
+    BigDecimal sumByTypeAndCategoryBetween(@Param("userId") Long userId,
+                                           @Param("type") TransactionType type,
                                            @Param("category") String category,
                                            @Param("start") LocalDate start,
                                            @Param("end") LocalDate end);

@@ -9,6 +9,7 @@ import com.smartapi.model.AuditLog;
 import com.smartapi.model.Transaction;
 import com.smartapi.model.TransactionType;
 import com.smartapi.repository.TransactionRepository;
+import com.smartapi.security.CurrentUser;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,7 @@ public class TransactionService {
         LocalDate date = request.date() != null ? request.date() : LocalDate.now();
 
         Transaction saved = repository.save(new Transaction(
-                request.description().trim(), request.amount(), request.type(), category, date));
+                CurrentUser.id(), request.description().trim(), request.amount(), request.type(), category, date));
 
         auditService.record(source, "TRANSACTION_CREATED",
                 saved.getType() + " " + saved.getAmount() + " [" + category + "] " + saved.getDescription());
@@ -51,19 +52,19 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public Page<TransactionResponse> list(Pageable pageable) {
-        return repository.findAllByOrderByDateDescIdDesc(pageable).map(TransactionResponse::from);
+        return repository.findByUserIdOrderByDateDescIdDesc(CurrentUser.id(), pageable).map(TransactionResponse::from);
     }
 
     @Transactional(readOnly = true)
     public TransactionResponse get(Long id) {
-        return repository.findById(id)
+        return repository.findByIdAndUserId(id, CurrentUser.id())
                 .map(TransactionResponse::from)
                 .orElseThrow(() -> new NotFoundException("Transação " + id + " não encontrada."));
     }
 
     @Transactional
     public void delete(Long id) {
-        Transaction t = repository.findById(id)
+        Transaction t = repository.findByIdAndUserId(id, CurrentUser.id())
                 .orElseThrow(() -> new NotFoundException("Transação " + id + " não encontrada."));
         repository.delete(t);
         auditService.record(AuditLog.Source.API, "TRANSACTION_DELETED", "id=" + id);
@@ -71,8 +72,9 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public BalanceResponse balance() {
-        BigDecimal income = repository.sumByType(TransactionType.INCOME);
-        BigDecimal expense = repository.sumByType(TransactionType.EXPENSE);
+        Long userId = CurrentUser.id();
+        BigDecimal income = repository.sumByType(userId, TransactionType.INCOME);
+        BigDecimal expense = repository.sumByType(userId, TransactionType.EXPENSE);
         return new BalanceResponse(income, expense, income.subtract(expense));
     }
 }

@@ -1,5 +1,7 @@
 package com.smartapi.ai;
 
+import com.smartapi.exception.AiErrors;
+import com.smartapi.exception.AssistantException;
 import org.springframework.ai.openai.OpenAiAudioSpeechModel;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +23,10 @@ public class SpeechService {
             throw new IllegalArgumentException("O texto para síntese de voz não pode ser vazio.");
         }
         String safe = text.length() > MAX_CHARS ? text.substring(0, MAX_CHARS) : text;
-        return speechModel.call(safe);
+        try {
+            return speechModel.call(safe);
+        } catch (RuntimeException e) {
+            throw new AssistantException(AiErrors.explain(e), e);
+        }
     }
 }

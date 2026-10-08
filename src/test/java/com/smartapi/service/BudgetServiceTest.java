@@ -6,6 +6,9 @@ import com.smartapi.model.Budget;
 import com.smartapi.model.TransactionType;
 import com.smartapi.repository.BudgetRepository;
 import com.smartapi.repository.TransactionRepository;
+import com.smartapi.security.CurrentUser;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -24,16 +27,26 @@ class BudgetServiceTest {
     private final TransactionRepository transactions = mock(TransactionRepository.class);
     private final BudgetService service = new BudgetService(budgets, transactions, mock(AuditService.class));
 
+    @BeforeEach
+    void login() {
+        CurrentUser.set(1L);
+    }
+
+    @AfterEach
+    void logout() {
+        CurrentUser.clear();
+    }
+
     private void givenBudget(String category, String limit, String spent) {
-        when(budgets.findByCategory(category)).thenReturn(Optional.of(new Budget(category, new BigDecimal(limit))));
+        when(budgets.findByUserIdAndCategory(1L, category)).thenReturn(Optional.of(new Budget(1L, category, new BigDecimal(limit))));
         when(transactions.sumByTypeAndCategoryBetween(
-                eq(TransactionType.EXPENSE), eq(category), any(LocalDate.class), any(LocalDate.class)))
+                eq(1L), eq(TransactionType.EXPENSE), eq(category), any(LocalDate.class), any(LocalDate.class)))
                 .thenReturn(new BigDecimal(spent));
     }
 
     @Test
     void semOrcamentoRetornaNoBudget() {
-        when(budgets.findByCategory("lazer")).thenReturn(Optional.empty());
+        when(budgets.findByUserIdAndCategory(1L, "lazer")).thenReturn(Optional.empty());
         assertEquals(Level.NO_BUDGET, service.evaluate("Lazer").level());
     }
 
